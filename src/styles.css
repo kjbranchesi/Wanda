@@ -1232,3 +1232,24 @@ select.twk-field {
   height: 13px;
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3));
 }
+
+/* ── Cursor visibility ──────────────────────────────────────────────────────
+   The Tweaks panel is a control surface, so show the real OS cursor over it.
+   The page hides the cursor (cursor:none) in favour of the custom Wanda-eye
+   follower, which renders BEHIND this very-high z-index panel — without these
+   rules you'd be clicking the panel blind. */
+.twk-fab,
+.twk-panel,
+.twk-panel * { cursor: default; }
+.twk-fab,
+.twk-panel button,
+.twk-panel select,
+.twk-panel .twk-toggle,
+.twk-panel .twk-chip,
+.twk-panel .twk-slider { cursor: pointer; }
+/* Vendor slider-thumb pseudo-elements must each be their OWN rule — grouping
+   ::-webkit- and ::-moz- in one comma list makes browsers drop the whole rule. */
+.twk-panel .twk-slider::-webkit-slider-thumb { cursor: pointer; }
+.twk-panel .twk-slider::-moz-range-thumb { cursor: pointer; }
+.twk-panel input[type="text"] { cursor: text; }
+.twk-hd { cursor: move; }
