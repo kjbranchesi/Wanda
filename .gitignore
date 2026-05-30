@@ -1,0 +1,9 @@
+node_modules
+dist
+dist-ssr
+*.local
+.DS_Store
+
+# Design handoff reference material (kept locally, not part of the app)
+design_bundle.gz
+wanda-coffee/

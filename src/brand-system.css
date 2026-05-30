@@ -1,0 +1,503 @@
+/* ======================================================================
+   ONE EYED WANDA · Brand System page
+   A pannable / zoomable canvas of brand artboards. Standalone from the
+   landing page (its own cursor, its own type base).
+   ====================================================================== */
+
+html, body {
+  margin: 0;
+  font-family: "Space Grotesk", sans-serif;
+  background: #ece8df;
+  overflow: hidden; /* the canvas is a fixed, full-viewport surface */
+}
+a { color: inherit; }
+
+/* ── Topbar ──────────────────────────────────────────────────────────── */
+.bs-topbar {
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 100;
+  background: #0E0E0E;
+  color: #F7F4ED;
+  padding: 10px 16px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: "Space Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+}
+.bs-topbar a {
+  background: #FF4D2E;
+  color: #F7F4ED;
+  padding: 5px 12px;
+  border-radius: 999px;
+  text-decoration: none;
+}
+.bs-topbar a:hover { background: #0E0E0E; box-shadow: inset 0 0 0 1px #F7F4ED; }
+
+/* ── Design canvas chrome ────────────────────────────────────────────── */
+.dc-card {
+  /* contains artboard content's z-indexes so a z-indexed child can't paint
+     over the header */
+  isolation: isolate;
+  border-radius: 2px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 4px 16px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  background: #fff;
+}
+.dc-card * { scrollbar-width: none; }
+.dc-card *::-webkit-scrollbar { display: none; }
+
+/* Artboard header: label + focus button. Scales affinely with the canvas
+   (same as the cards and section titles) so the label always sits in a fixed
+   world-space slot above its card and never collides with the section title. */
+.dc-header {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  margin-bottom: 6px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  color: rgba(60, 50, 40, 0.7);
+}
+.dc-labeltext {
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 3px 6px;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1;
+  transition: background 0.12s;
+}
+.dc-labeltext:hover { background: rgba(0, 0, 0, 0.06); }
+.dc-expand {
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  background: transparent;
+  color: rgba(60, 50, 40, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: background 0.12s, color 0.12s, opacity 0.12s;
+}
+[data-dc-slot]:hover .dc-expand { opacity: 1; }
+.dc-expand:hover { background: rgba(0, 0, 0, 0.06); color: #2a251f; }
+
+/* ── Zoom controls ───────────────────────────────────────────────────── */
+.dc-zoom {
+  position: fixed;
+  left: 14px;
+  bottom: 14px;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: #0E0E0E;
+  color: #F7F4ED;
+  border-radius: 999px;
+  padding: 4px;
+  font-family: "Space Mono", monospace;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
+}
+.dc-zoom button {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  height: 30px;
+  min-width: 30px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  transition: background 0.12s;
+}
+.dc-zoom button:hover { background: rgba(247, 244, 237, 0.14); }
+.dc-zoom-pct { min-width: 54px; font-size: 11px; letter-spacing: 0.06em; }
+.dc-zoom-sep { width: 1px; height: 18px; background: rgba(247, 244, 237, 0.2); margin: 0 3px; }
+.dc-zoom-fit { padding: 0 12px; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; }
+
+/* ======================================================================
+   Brand system artboards — card styles (ported verbatim).
+   ====================================================================== */
+.bs-card {
+  width: 100%;
+  height: 100%;
+  padding: 32px;
+  position: relative;
+  font-family: "Space Grotesk", sans-serif;
+  color: #0E0E0E;
+  display: flex;
+  flex-direction: column;
+  border: 2px solid #0E0E0E;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+.bs-card-meta {
+  font-family: "Space Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border-bottom: 1px solid #0E0E0E;
+  padding-bottom: 8px;
+  margin-bottom: 24px;
+}
+.bs-card-foot {
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid #0E0E0E;
+  font-family: "Space Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.bs-mono {
+  font-family: "Space Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* ── Logo lockup ─────────────────────────────────────────────────────── */
+.bs-logo-stage {
+  flex: 1;
+  display: grid;
+  place-items: center;
+}
+.bs-logo-primary {
+  display: flex;
+  align-items: center;
+  gap: 36px;
+}
+.bs-logotype {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-family: "Big Shoulders Display", sans-serif;
+  font-weight: 900;
+  font-size: 96px;
+  line-height: 0.85;
+  text-transform: uppercase;
+  letter-spacing: -0.015em;
+}
+.bs-logotype-italic {
+  font-family: "Instrument Serif", serif;
+  font-style: italic;
+  font-weight: 400;
+  color: #FF4D2E;
+  font-size: 1.1em;
+}
+.bs-logotype-rule {
+  height: 2px;
+  background: #0E0E0E;
+  margin: 4px 0;
+  width: 100%;
+}
+.bs-logotype-mono {
+  font-family: "Space Mono", monospace;
+  font-weight: 400;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: #0E0E0E;
+}
+
+/* ── Mark variations grid ────────────────────────────────────────────── */
+.bs-marks-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 16px;
+}
+.bs-mark-cell {
+  border: 1px solid #0E0E0E;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px;
+}
+
+/* ── Palette ─────────────────────────────────────────────────────────── */
+.bs-pal-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  height: 240px;
+}
+.bs-pal-card {
+  border: 2px solid #0E0E0E;
+  padding: 18px 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.bs-pal-name {
+  font-family: "Big Shoulders Display", sans-serif;
+  font-weight: 900;
+  font-size: 40px;
+  line-height: 0.9;
+  text-transform: uppercase;
+}
+.bs-pal-role {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 13px;
+  line-height: 1.3;
+  opacity: 0.9;
+}
+.bs-pal-hex {
+  font-size: 11px;
+}
+.bs-pal-alts {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+  margin-top: 16px;
+}
+.bs-pal-alt-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-top: 8px;
+  height: 60px;
+}
+.bs-pal-alt-chip {
+  border: 1px solid #0E0E0E;
+}
+
+/* ── Typography ──────────────────────────────────────────────────────── */
+.bs-type-row {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 24px;
+  padding: 24px 0;
+  border-bottom: 1px solid #0E0E0E;
+  align-items: start;
+}
+.bs-type-row:last-of-type { border-bottom: none; }
+.bs-type-label .bs-mono { margin-bottom: 8px; }
+.bs-type-label {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 14px;
+}
+.bs-type-sample {
+  color: #0E0E0E;
+}
+.bs-type-scale {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 2px solid #0E0E0E;
+  display: grid;
+  gap: 18px;
+}
+.bs-scale-row {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  align-items: baseline;
+  gap: 20px;
+}
+
+/* ── Voice ───────────────────────────────────────────────────────────── */
+.bs-voice-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: auto auto;
+  gap: 32px;
+  font-size: 16px;
+  line-height: 1.45;
+}
+.bs-voice-list {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.bs-voice-list li .bs-mono {
+  color: #FF4D2E;
+  margin-right: 4px;
+}
+
+/* ── Packaging ───────────────────────────────────────────────────────── */
+.bs-pkg-row {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  align-items: end;
+  padding: 20px 0;
+}
+.bs-can-wrap { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.bs-can {
+  position: relative;
+  width: 220px;
+  height: 320px;
+  border-radius: 18px;
+  border: 2px solid #0E0E0E;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 10px 16px;
+  box-shadow: 6px 6px 0 #B8FF3D;
+}
+.bs-can-band {
+  font-family: "Space Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  padding: 4px 12px;
+  width: 100%;
+  text-align: center;
+}
+.bs-can-name {
+  font-family: "Big Shoulders Display", sans-serif;
+  font-weight: 900;
+  font-size: 20px;
+  line-height: 0.95;
+  text-align: center;
+  text-transform: uppercase;
+}
+.bs-can-meta { font-size: 9px; }
+
+/* ── Stationery ──────────────────────────────────────────────────────── */
+.bs-stat-row {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  align-items: stretch;
+}
+.bs-card-biz {
+  height: 240px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-family: "Space Grotesk", sans-serif;
+}
+
+/* ── Poster ──────────────────────────────────────────────────────────── */
+.bs-poster {
+  width: 100%;
+  height: 100%;
+  background: #0E0E0E;
+  color: #F7F4ED;
+  display: flex;
+  flex-direction: column;
+  padding: 32px;
+  position: relative;
+  gap: 16px;
+}
+.bs-poster-meta {
+  display: flex;
+  justify-content: space-between;
+  font-family: "Space Mono", monospace;
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  border-bottom: 1px solid #F7F4ED;
+  padding-bottom: 12px;
+}
+.bs-poster-art {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+}
+.bs-poster-banner {
+  background: #FF4D2E;
+  color: #F7F4ED;
+  font-family: "Big Shoulders Display", sans-serif;
+  font-weight: 900;
+  font-size: 36px;
+  letter-spacing: 0.02em;
+  padding: 10px 24px;
+  text-transform: uppercase;
+}
+.bs-poster-foot {
+  font-family: "Space Mono", monospace;
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  border-top: 1px solid #F7F4ED;
+  padding-top: 12px;
+  text-align: center;
+}
+
+/* ── Signage / awning ───────────────────────────────────────────────── */
+.bs-awning {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #0E0E0E;
+  overflow: hidden;
+  min-height: 240px;
+}
+.bs-awning-stripes {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(14, 1fr);
+}
+.bs-awning-name {
+  position: relative;
+  background: #F7F4ED;
+  padding: 24px 40px;
+  border: 2px solid #0E0E0E;
+  text-align: center;
+  z-index: 2;
+}
+.bs-signage-row {
+  display: flex;
+  gap: 16px;
+  margin-top: 20px;
+}
+.bs-sign-pill {
+  border: 2px solid #0E0E0E;
+  padding: 14px 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  border-radius: 12px;
+}
+
+/* ── Social ─────────────────────────────────────────────────────────── */
+.bs-social-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.bs-soc {
+  border: 2px solid #0E0E0E;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 1 / 1;
+}

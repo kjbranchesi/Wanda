@@ -1,0 +1,8 @@
+# Netlify deploy config. Connect this repo at app.netlify.com (or run
+# `npx netlify deploy --build --prod`) and it ships as-is — no dashboard setup.
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
