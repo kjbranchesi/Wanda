@@ -23,16 +23,19 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
       - name: Build
         run: npm run build
         env:
-          # Project pages are served from /<repo>/ — match the asset base to it.
+          # Project pages serve from /<repo>/ — match the asset base to it.
+          # (When you add a custom domain later, change this to: /)
           VITE_BASE: /${{ github.event.repository.name }}/
       - uses: actions/upload-pages-artifact@v3
         with:
