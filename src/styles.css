@@ -263,7 +263,9 @@ body.vibe-zine { --flame: #111; --acid: #DDD; }
   padding: 6px 12px;
 }
 .oew-corner-stick.top-right { top: 78px; right: 30px; transform: rotate(6deg); }
-.oew-corner-stick.bot-left  { left: 30px; bottom: 30px; transform: rotate(-3deg); }
+/* Centered along the bottom so it clears the left-aligned hero CTAs and the
+   saint frame on the right (it used to sit on top of the buttons). */
+.oew-corner-stick.bot-left  { left: 50%; bottom: 26px; transform: translateX(-50%) rotate(-3deg); }
 
 /* =================== MARQUEE =================== */
 .oew-marquee {
@@ -966,6 +968,7 @@ body.vibe-zine .oew-corner-stick {
 /* =================== RESPONSIVE =================== */
 @media (max-width: 960px) {
   .oew-hero-grid { grid-template-columns: 1fr; }
+  .oew-corner-stick { display: none; }
   .oew-story { grid-template-columns: 1fr; }
   .oew-story-aside { writing-mode: horizontal-tb; transform: none; }
   .oew-roast-grid { grid-template-columns: repeat(2, 1fr); }

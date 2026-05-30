@@ -20,7 +20,7 @@ export const Hero = ({ tagline }: HeroProps) => {
   return (
     <section className="oew-hero">
       <div className="oew-hero-stamp oew-mono">
-        <span>EST. 2024</span>
+        <span>EST. 2026</span>
         <span>·</span>
         <span>WILBRAHAM · MASSACHUSETTS</span>
         <span>·</span>

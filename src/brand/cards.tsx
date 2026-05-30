@@ -159,7 +159,7 @@ export const BSType = () => (
         <div>Space Mono 400</div>
       </div>
       <div className="bs-type-sample bs-mono" style={{ fontSize: 14, letterSpacing: '0.16em' }}>
-        EST. 2024 · WILBRAHAM, MA · LOT №017 · ROASTED TUESDAY
+        EST. 2026 · WILBRAHAM, MA · LOT №017 · ROASTED TUESDAY
       </div>
     </div>
 
@@ -171,7 +171,7 @@ export const BSType = () => (
         { l: 'H3 · Card', s: 'Suspicious Light', f: "'Big Shoulders Display'", style: { fontWeight: 900, textTransform: 'uppercase' as const }, fs: 28 },
         { l: 'Body L', s: 'Patron saint of mondays.', f: "'Space Grotesk'", style: { fontWeight: 400 }, fs: 20 },
         { l: 'Body', s: 'She lost an eye. We found a roast.', f: "'Space Grotesk'", style: { fontWeight: 400 }, fs: 16 },
-        { l: 'Caption', s: 'EST. 2024 · WILBRAHAM MA', f: "'Space Mono'", style: { letterSpacing: '0.14em', textTransform: 'uppercase' as const }, fs: 11 },
+        { l: 'Caption', s: 'EST. 2026 · WILBRAHAM MA', f: "'Space Mono'", style: { letterSpacing: '0.14em', textTransform: 'uppercase' as const }, fs: 11 },
       ].map((r, i) => (
         <div key={i} className="bs-scale-row">
           <span className="bs-mono">{r.l}</span>
@@ -328,7 +328,7 @@ export const BSPoster = () => (
         <WandaCat size={520} variant="smug" showHalo haloColor={P.acid} accent={P.flame} ink={P.cream} fur={P.ink} />
         <div className="bs-poster-banner">PATRON SAINT OF MONDAYS</div>
       </div>
-      <div className="bs-poster-foot bs-mono">EST. WILBRAHAM · 2024 · BLESSED BE THE BEAN</div>
+      <div className="bs-poster-foot bs-mono">EST. WILBRAHAM · 2026 · BLESSED BE THE BEAN</div>
     </div>
   </div>
 )

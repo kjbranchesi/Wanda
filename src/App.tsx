@@ -78,7 +78,7 @@ export default function App() {
     'ONE EYED WANDA',
     String(t.tagline || '').toUpperCase(),
     'ROASTED IN WILBRAHAM, MA',
-    'EST. 2024',
+    'EST. 2026',
     'SHE SEES YOU',
   ]
 
