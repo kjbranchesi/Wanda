@@ -40,11 +40,15 @@ export const Feed = () => (
             <span>↗</span>
           </div>
           <div className="oew-feed-cat">
+            {/* Every feed cat: cream fur + black linework + flame accent on all
+                tiles, matching the product cans — so outlines never vanish on
+                the flame/ink backgrounds. */}
             <WandaCat
               size={170}
               variant={f.v}
-              ink={f.dark ? 'var(--ink)' : 'var(--cream)'}
-              accent={f.dark ? 'var(--flame)' : 'var(--ink)'}
+              fur="var(--cream)"
+              ink="var(--ink)"
+              accent="var(--flame)"
             />
           </div>
           <div className="oew-feed-foot oew-mono">{f.n}</div>

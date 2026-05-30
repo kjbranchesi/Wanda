@@ -11,6 +11,14 @@ export const CursorEye = () => {
 
   useEffect(() => {
     const onMove = (e: MouseEvent) => {
+      // Over the Tweaks panel/launcher, hide the eye so the real OS cursor
+      // shows — otherwise the eye renders behind the panel and you're pointing
+      // blind.
+      const target = e.target as Element | null
+      if (target?.closest?.('.twk-panel, .twk-fab')) {
+        setHidden(true)
+        return
+      }
       setPos({ x: e.clientX, y: e.clientY })
       setHidden(false)
       // compute pupil offset based on direction from screen center

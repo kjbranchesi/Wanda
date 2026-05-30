@@ -3,9 +3,11 @@
 // ink, anywhere. Proportions are chibi/dumpling: a big round head with puffy
 // cheeks over a small body — the "chubby cute" pass the user landed on.
 //
-// Variants: sit | loaf | peek | grump | stretch | walk | sip
-// Old names (smug, wink, yowl, sleep, scratch) are mapped via WandaCat so
-// existing call sites keep working.
+// Variants: sit | suspicious | feral | yowl | loaf | peek | stretch | grump | walk | sip
+// Mood is carried by the FACE + small props (brows, hackles, anger marks),
+// never by contorting the body — that's what made the old stretch/grump poses
+// ugly. Old names (smug, wink, sleep, scratch) map via WandaCat so existing
+// call sites keep working.
 import type { CSSProperties, ReactElement } from 'react'
 
 const STROKE = 4
@@ -13,6 +15,9 @@ const STROKE_FINE = 2.4
 
 export type WandaVariant =
   | 'sit'
+  | 'suspicious'
+  | 'feral'
+  | 'yowl'
   | 'loaf'
   | 'peek'
   | 'stretch'
@@ -22,14 +27,24 @@ export type WandaVariant =
   // legacy aliases
   | 'smug'
   | 'wink'
-  | 'yowl'
   | 'sleep'
   | 'scratch'
 
-type CanonicalVariant = 'sit' | 'loaf' | 'peek' | 'stretch' | 'grump' | 'walk' | 'sip'
+type CanonicalVariant =
+  | 'sit'
+  | 'suspicious'
+  | 'feral'
+  | 'yowl'
+  | 'loaf'
+  | 'peek'
+  | 'stretch'
+  | 'grump'
+  | 'walk'
+  | 'sip'
 
-type FaceEye = 'open' | 'closed' | 'squint'
-type FaceMouth = 'smirk' | 'frown' | 'yawn' | 'sip' | 'flat'
+type FaceEye = 'open' | 'closed' | 'squint' | 'wide' | 'side'
+type FaceMouth = 'smirk' | 'frown' | 'yawn' | 'sip' | 'flat' | 'hiss' | 'yowl'
+type FaceBrow = 'none' | 'angry' | 'raised'
 
 interface FaceProps {
   ink: string
@@ -37,17 +52,20 @@ interface FaceProps {
   accent: string
   eye?: FaceEye
   mouth?: FaceMouth
+  brow?: FaceBrow
 }
 
 // Shared face features. Position assumes the head is centered at (120, 118)
-// with rx≈62, ry≈54. Each variant tweaks `eye` and `mouth`.
+// with rx≈62, ry≈54. Each variant tweaks `eye`, `mouth`, and `brow`.
 //
 // Style notes ("cute" pass):
 // - Round, bright eye with a fat sparkle (anime/chibi feel)
 // - Softer, smaller X so the missing eye reads playful, not gory
 // - Tiny ":3" mouth, small accent nose
 // - Pink cheek blushes for extra softness
-const Face = ({ ink, fur, accent, eye = 'open', mouth = 'smirk' }: FaceProps) => (
+// Expressive add-ons (wide/side eyes, hiss/yowl mouths, angry/raised brows)
+// carry the four product moods without changing the body.
+const Face = ({ ink, fur, accent, eye = 'open', mouth = 'smirk', brow = 'none' }: FaceProps) => (
   <g>
     {/* ─── CHEEK BLUSH — pushed out to the puffy cheeks ─── */}
     <g opacity="0.6">
@@ -57,21 +75,22 @@ const Face = ({ ink, fur, accent, eye = 'open', mouth = 'smirk' }: FaceProps) =>
 
     {/* ─── GOOD EYE (viewer-left) ─── */}
     {eye === 'closed' ? (
-      <path
-        d="M 86 112 Q 102 102 118 112"
-        fill="none"
-        stroke={ink}
-        strokeWidth={STROKE}
-        strokeLinecap="round"
-      />
+      <path d="M 86 112 Q 102 102 118 112" fill="none" stroke={ink} strokeWidth={STROKE} strokeLinecap="round" />
     ) : eye === 'squint' ? (
-      <path
-        d="M 86 114 Q 102 120 118 114"
-        fill="none"
-        stroke={ink}
-        strokeWidth={STROKE}
-        strokeLinecap="round"
-      />
+      <path d="M 86 114 Q 102 120 118 114" fill="none" stroke={ink} strokeWidth={STROKE} strokeLinecap="round" />
+    ) : eye === 'wide' ? (
+      <g>
+        {/* blown-out pupil — alarmed / feral intensity */}
+        <circle cx="100" cy="112" r="14.5" fill={ink} />
+        <circle cx="105" cy="106" r="3.6" fill={fur} />
+        <circle cx="94" cy="118" r="1.5" fill={fur} />
+      </g>
+    ) : eye === 'side' ? (
+      <g>
+        {/* narrowed, unimpressed eye — flattened pupil + cocked brow = "really?" */}
+        <ellipse cx="100" cy="114" rx="11.5" ry="7" fill={ink} />
+        <circle cx="104" cy="111" r="3" fill={fur} />
+      </g>
     ) : (
       <g>
         {/* big round eye with a chunky sparkle — the "cute" anchor */}
@@ -87,6 +106,16 @@ const Face = ({ ink, fur, accent, eye = 'open', mouth = 'smirk' }: FaceProps) =>
       <line x1="154" y1="104" x2="134" y2="122" />
     </g>
 
+    {/* ─── BROWS — expression accents over both sockets ─── */}
+    {brow === 'angry' ? (
+      <g stroke={ink} strokeWidth={STROKE} strokeLinecap="round">
+        <line x1="84" y1="92" x2="114" y2="102" />
+        <line x1="160" y1="92" x2="130" y2="100" />
+      </g>
+    ) : brow === 'raised' ? (
+      <path d="M 84 96 Q 100 87 116 95" fill="none" stroke={ink} strokeWidth={STROKE - 0.6} strokeLinecap="round" />
+    ) : null}
+
     {/* ─── NOSE — tiny accent triangle ─── */}
     <path
       d="M 116 132 Q 120 130 124 132 Q 122 138 120 138 Q 118 138 116 132 Z"
@@ -97,7 +126,21 @@ const Face = ({ ink, fur, accent, eye = 'open', mouth = 'smirk' }: FaceProps) =>
     />
 
     {/* ─── MOUTH ─── */}
-    {mouth === 'sip' ? (
+    {mouth === 'hiss' ? (
+      <g>
+        {/* open snarl with two little fangs */}
+        <path d="M 107 143 Q 120 139 133 143 Q 129 159 120 159 Q 111 159 107 143 Z" fill={ink} />
+        <path d="M 112 144 L 114.5 151 L 117 144 Z" fill={fur} />
+        <path d="M 123 144 L 125.5 151 L 128 144 Z" fill={fur} />
+        <path d="M 114 154 Q 120 150 126 154 Q 120 161 114 154 Z" fill={accent} />
+      </g>
+    ) : mouth === 'yowl' ? (
+      <g>
+        {/* wide open caterwaul */}
+        <ellipse cx="120" cy="151" rx="7.5" ry="9.5" fill={ink} />
+        <path d="M 113.5 152 Q 120 148 126.5 152 Q 120 162 113.5 152 Z" fill={accent} />
+      </g>
+    ) : mouth === 'sip' ? (
       <ellipse cx="120" cy="148" rx="3.8" ry="3" fill={ink} />
     ) : mouth === 'yawn' ? (
       <g>
@@ -180,65 +223,105 @@ const Wanda = ({
   )
 
   // ─────────────── BODY VARIANTS ───────────────
-  // Each variant draws a single continuous fur silhouette (so the outline
-  // wraps cleanly) plus interior details (belly shadow, paw lines).
+  // `behind` draws behind the silhouette (hackles), `overlay` on top of the
+  // face (anger marks, sound ticks). Mood is carried by the face + these
+  // props, not by deforming the body.
 
   let silhouette: ReactElement | null
   let interior: ReactElement | null = null
   let face = <Face ink={ink} fur={fur} accent={accent} eye="open" mouth="smirk" />
+  let behind: ReactElement | null = null
+  let overlay: ReactElement | null = null
+
+  // Shared chibi body — the reliable big-head / small-body silhouette every
+  // "good" pose is built on.
+  const sitBody = (
+    <path
+      d="
+        M 70 22
+        L 88 58
+        Q 120 44 152 58
+        L 170 22
+        Q 178 16 178 36
+        L 172 62
+        Q 198 88 198 138
+        Q 198 180 170 188
+        Q 188 222 146 228
+        Q 120 234 94 228
+        Q 52 222 70 188
+        Q 42 180 42 138
+        Q 42 88 68 62
+        L 62 36
+        Q 62 16 70 22
+        Z
+      "
+      fill={fur}
+      stroke={ink}
+      strokeWidth={STROKE}
+      strokeLinejoin="round"
+      strokeLinecap="round"
+    />
+  )
+  const sitInnards = (
+    <g>
+      {/* belly shadow */}
+      <path d="M 96 200 Q 120 226 144 200 Q 144 228 120 230 Q 96 228 96 200 Z" fill={bellyColor} />
+      {/* paw divider */}
+      <path d="M 120 222 L 120 232" stroke={ink} strokeWidth="2.4" strokeLinecap="round" opacity="0.7" />
+      {/* tail behind body */}
+      <path d="M 178 210 Q 224 204 222 162 Q 220 142 200 146" fill="none" stroke={fur} strokeWidth="22" strokeLinecap="round" />
+      <path d="M 178 210 Q 224 204 222 162 Q 220 142 200 146" fill="none" stroke={ink} strokeWidth={STROKE} strokeLinecap="round" />
+    </g>
+  )
 
   if (variant === 'sit') {
-    // SIT — chibi proportions: big round head with puffy cheeks, small body.
-    silhouette = (
-      <path
-        d="
-          M 70 22
-          L 88 58
-          Q 120 44 152 58
-          L 170 22
-          Q 178 16 178 36
-          L 172 62
-          Q 198 88 198 138
-          Q 198 180 170 188
-          Q 188 222 146 228
-          Q 120 234 94 228
-          Q 52 222 70 188
-          Q 42 180 42 138
-          Q 42 88 68 62
-          L 62 36
-          Q 62 16 70 22
-          Z
-        "
-        fill={fur}
-        stroke={ink}
-        strokeWidth={STROKE}
-        strokeLinejoin="round"
-        strokeLinecap="round"
-      />
-    )
-    interior = (
-      <g>
-        {/* belly shadow — smaller, sits in the little body */}
-        <path d="M 96 200 Q 120 226 144 200 Q 144 228 120 230 Q 96 228 96 200 Z" fill={bellyColor} />
-        {/* paw divider */}
-        <path d="M 120 222 L 120 232" stroke={ink} strokeWidth="2.4" strokeLinecap="round" opacity="0.7" />
-        {/* tail behind body */}
-        <path
-          d="M 178 210 Q 224 204 222 162 Q 220 142 200 146"
-          fill="none"
-          stroke={fur}
-          strokeWidth="22"
-          strokeLinecap="round"
-        />
-        <path
-          d="M 178 210 Q 224 204 222 162 Q 220 142 200 146"
-          fill="none"
-          stroke={ink}
-          strokeWidth={STROKE}
-          strokeLinecap="round"
-        />
+    // SIT — calm, smug default.
+    silhouette = sitBody
+    interior = sitInnards
+  } else if (variant === 'suspicious') {
+    // SUSPICIOUS — half-lidded side-eye + one cocked brow. Watching you.
+    silhouette = sitBody
+    interior = sitInnards
+    face = <Face ink={ink} fur={fur} accent={accent} eye="side" brow="raised" mouth="smirk" />
+  } else if (variant === 'feral') {
+    // FERAL — chibi body, raised hackles, blown pupil, fanged hiss, anger pop.
+    silhouette = sitBody
+    interior = sitInnards
+    behind = (
+      <g fill={fur} stroke={ink} strokeWidth={STROKE} strokeLinejoin="round">
+        {/* left hackles */}
+        <path d="M 46 118 L 24 106 L 50 132 Z" />
+        <path d="M 44 150 L 20 153 L 48 167 Z" />
+        {/* right hackles */}
+        <path d="M 194 118 L 216 106 L 190 132 Z" />
+        <path d="M 196 150 L 220 153 L 192 167 Z" />
+        {/* crown spikes poking up between the ears */}
+        <path d="M 106 44 L 100 14 L 122 46 Z" />
+        <path d="M 134 44 L 140 14 L 118 46 Z" />
       </g>
     )
+    overlay = (
+      <g transform="translate(180 68)" stroke={accent} strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M 0 -9 Q 3.5 -4 0 0 Q -3.5 -4 0 -9 Z" />
+        <path d="M 9 0 Q 4 3.5 0 0 Q 4 -3.5 9 0 Z" />
+        <path d="M 0 9 Q 3.5 4 0 0 Q -3.5 4 0 9 Z" />
+        <path d="M -9 0 Q -4 3.5 0 0 Q -4 -3.5 -9 0 Z" />
+      </g>
+    )
+    face = <Face ink={ink} fur={fur} accent={accent} eye="wide" brow="angry" mouth="hiss" />
+  } else if (variant === 'yowl') {
+    // YOWL — chibi body, angry brow, wide caterwaul, little sound ticks.
+    silhouette = sitBody
+    interior = sitInnards
+    overlay = (
+      <g stroke={ink} strokeWidth="3" strokeLinecap="round" opacity="0.6">
+        <line x1="54" y1="118" x2="38" y2="113" />
+        <line x1="54" y1="131" x2="36" y2="132" />
+        <line x1="186" y1="118" x2="202" y2="113" />
+        <line x1="186" y1="131" x2="204" y2="132" />
+      </g>
+    )
+    face = <Face ink={ink} fur={fur} accent={accent} eye="squint" brow="angry" mouth="yowl" />
   } else if (variant === 'loaf') {
     // LOAF — chubby head sits on a small bread base. Eyes closed.
     silhouette = (
@@ -486,9 +569,9 @@ const Wanda = ({
     )
     face = <Face ink={ink} fur={fur} accent={accent} eye="open" mouth="sip" />
   } else {
-    // fallback to sit
-    silhouette = null
-    interior = null
+    // fallback to the chibi sit body
+    silhouette = sitBody
+    interior = sitInnards
   }
 
   return (
@@ -501,6 +584,7 @@ const Wanda = ({
       aria-label={`Wanda the one-eyed cat — ${variant}`}
     >
       {halo}
+      {behind}
       {silhouette}
       {interior}
       {/* inner-ear color sits on top of the silhouette */}
@@ -513,6 +597,7 @@ const Wanda = ({
         </g>
       )}
       {face}
+      {overlay}
     </svg>
   )
 }
@@ -520,10 +605,10 @@ const Wanda = ({
 // ─── Legacy variant shim — keep old call sites working ───
 const VARIANT_MAP: Record<string, CanonicalVariant> = {
   smug: 'sit',
-  wink: 'sit',
-  yowl: 'grump',
+  wink: 'suspicious',
+  yowl: 'yowl',
   sleep: 'loaf',
-  scratch: 'stretch',
+  scratch: 'feral',
 }
 
 export interface WandaCatProps extends Omit<WandaProps, 'variant'> {

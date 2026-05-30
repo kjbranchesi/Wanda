@@ -22,7 +22,7 @@ const ROASTS: Roast[] = [
     notes: ['bergamot', 'jasmine', 'lemon pith'],
     roast: 'LIGHT',
     price: '$22',
-    mood: 'smug',
+    mood: 'suspicious',
     icon: 'dripper',
   },
   {
